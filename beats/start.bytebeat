@@ -1,0 +1,203 @@
+BITS
+----
+
+Bytebeat I T iS
+
+Wellcome to the fastest but intensivest bytebeat tutorial for vim adepts.
+
+BASICS
+------
+
+F5 COMPILE AND PLAY CURRENT LINE
+F6 STOP AUDIO (killall aplay)
+
+SYNTAX AND FUNCTIONS
+--------------------
+
+OPERANDS
+
+t	Time
+0-9	Values		1 23 456
+:asd	Comments	t :ignoreTHIS 0000 
+
+OPERATORS
+
+	<< >>	
+	& | ^		
+	+ - 	
+	m / %
+
+STACK
+
+x	Swap 		A B x :then B A
+d	Duplicate 	A d :then A A
+
+ALL EXPRESSIONS ARE IN POSTFIX NOTATION
+
+:ok 	t 2 >> 32 & 
+:NOTok  t >> 2 & 32
+
+CLASSIC BYTEBEATS
+-----------------
+
+Here you have some basic notions, common to most bytebeats so far:
+
+SHIFTERS
+
+Move bits X places to the right or left. The result is close to divide or multiply X by powers of two.
+Commonly used for octaves and time measures.
+
+t :octave 1 <<
+t :measure 3 >>
+
+WAVE SHAPING
+
+Bitwise operators compare values bit by bit, they can be used to define shape and amplitude of a wave.
+
+t 64 &
+t 101 ^
+t 4 | 
+
+BASIC MODULATION
+
+Therefore, they can be used for modulation.
+
+t :modulationSpeed t 8 >> :modulationOperator &
+t t 4 >> |
+t t 6 >> ^
+t :combiningSpeeds t 5 >> t 6 >> ^ :modulationOperator &
+
+SEQUENCING
+
+Modulation is a sequence of different states, control the speed and output to achieve what you want.
+In this case, and octavator:
+
+t :speed 10 >> :output 3 & t x <<
+
+t :speed 10 >> :output 3 & 3 ^ t x <<
+
+INCEPTION
+
+Sequences inside sequences
+
+t :speedSequence t 12 >> 15 & :continue >> 3 & t x <<
+
+OLD TRICKS
+
+Phaser
+
+t t 255 \% ^
+
+Pythagoras, melodies and chords
+
+:sequence t :speed 9 >> :continue 42 & :multiply t m
+t 10 >> 3 & 2 + t 3 << x :divideInstead /
+t :speedUp 1 >> 3 & 2 + t 5 << x /
+
+Noises
+
+t t m
+t t m 2 >>
+
+Truncate aliasing glitch
+
+t :speed 3 >> t & :forceAliasing 1 -
+t 3 >> t & 10 -
+t 4 >> t & :aliasingSequence t 13 >> 31 & -
+
+"Mixing" with operators
+
+t 3 m t 5 m |
+t 3 m t 5 m ^
+t 3 m t 5 m | :controlAplitude 127 &
+
+:one t 10 >> 3 & t x << :two t 13 >> 3 & 1 + t x m :mix |
+t 10 >> 3 & t x << 63 & t 13 >> 3 & 1 + t x m 63 & +
+t 10 >> 3 & t x << 63 & t 13 >> 3 & 1 + t x m 63 & :glitch -
+t 10 >> 3 & t x << 63 & t 13 >> 3 & 1 + t x m 63 & + :amplify 1 <<
+t 10 >> 3 & t x << t 13 >> 3 & 1 + t x m | 127 &
+t 10 >> 3 & t x << t 13 >> 3 & 1 + t x m | 127 & 1 <<
+
+BIN / HEX SEQUENCES
+-------------------
+
+Chiptune fast octavator 
+t :speed 7 >> :output 7 & t x << :squareWave 128 &
+t 7 >> 7 & :invertOutput 7 ^ :continue t x << 128 &
+
+:sound t 7 >> 7 & 7 ^ t x << 128 & :binSequencer :sequence 73 t :speed 10 >> :lenght 7 & >> :binary 1 & m
+t 7 >> 7 & 7 ^ t x << 128 & :binaryRepresentation $((2\#01001001)) t 10 >> 7 & >> 1 & m
+
+Hexadecimal melodies
+
+:sequence 17838 :sequencing t :speed 11 >> :lenght 3 & :moveByFourBits 2 << >> :hexlimit 15 & t m
+:hexRepresentation $((16\#45AE)) t 11 >> 3 & 2 << >> 15 & t m
+:anotherSequence $((16\#4398)) t 11 >> 3 & 2 << >> 15 & t m
+
+$((16\#4398)) :readingSequence t 11 >> t 10 >> t 12 >> | ^ :continue 3 & 2 << >> 15 & t 1 >> m
+$((16\#4398)) t 11 >> t 10 >> t 12 >> | ^ 3 & 2 << >> 15 & t :octave 5 << x :divideInstead /
+
+SERIOUS SCRIPTING
+-----------------
+
+Write variations replacing each t ocurrence with sed (remember to remove the comments and escape special characters).
+
+:distortion $(echo "t 10 >> 3 & t x <<" | sed 's/t/t 9 \% t \+/g')
+:slowPhaser $(echo "t 10 >> 3 & t x <<" | sed 's/t/t t 10 >> 63 \& 1 \+ \% t \+/g')
+
+:speedVariation $(echo "t 10 >> 3 & t x <<" | sed 's/t/t 13 >> 3 \& t x <</g')
+
+ONE BIT WAVETABLES
+------------------
+
+Going deep. 53 is 00110101 in binary. Reading from left to right you should notice a decreasing frequency: 1010 and then 1100.
+Now we can write 1-bit samples manually, this should sound like a kick drum:
+
+:samples 53 :readingSequence t :speed 6 >> :lenght 31 & >> :output 1 & :amplify 7 <<
+
+Here it's the same but sampling 16 bit long. 3893 is 0000111100110101 in binary, I hope you get the idea.
+
+3893 t :read 6 >> 31 & >> 1 & :amplify 7 <<
+
+Everything is about speed and ranges. Combine binary sequences for wave table and triggering:
+
+:wave 53 t 5 >> 31 & >> :trigger 27545 t 10 >> 15 & >> 1 & & :amplify 7 <<
+
+You can use fixed or changing values as wave tables.
+
+:fixed 238 :read t 4 >> 7 & >> 1 & 7 <<
+:changing t 10 >> :read t 4 >> 7 & >> 1 & 7 <<
+
+Even combine the two for desired modulation.
+
+:base 237 :modulation t 10 >> 3 & ^ :continue t 4 >> 7 & >> 1 & 7 <<
+:base 237 :modulation t 9 >> 1 & 3 << ^ :continue t 4 >> 7 & >> 1 & 7 <<
+
+Wave table, modulation and triggering:
+
+237 t 10 >> 3 & ^ t 4 >> 7 & >> 27545 t 10 >> 15 & >> 1 & & 7 <<
+
+Using x stack operator you can manage to sort the values in the prefered order.
+Group values:
+
+:trig 27545 :wave 237 t 10 >> 3 & ^ t 4 >> 7 & >> x t 10 >> 15 & >> 1 & & 7 <<
+:trig 65231 :wave 13 t 10 >> 3 & ^ t 4 >> 7 & >> x t 10 >> 15 & >> 1 & & 7 <<
+
+Envelopes are also sequences in the amplitude.
+
+237 t 10 >> 3 & ^ t 4 >> 7 & >> 1 & :envelope 7 t 10 >> 7 & - <<
+237 t 10 >> 3 & ^ t 4 >> 7 & >> 1 & :envelope 7 t 8 >> 3 & - <<
+237 t 10 >> 3 & ^ t 4 >> 7 & >> 1 & :envelope 7 t 10 >> 3 \% - <<
+
+Mixing our two creations:
+
+:bass 65231 13 t 10 >> 3 & ^ t 4 >> 7 & >> x t 10 >> 15 & >> 1 & & t 8 >> 3 & 3 ^ 1 + << :kick 53 t 5 >> 31 & >> 27545 t 10 >> 15 & >> 1 & & 5 << :mix | :amplify 1 <<
+65231 13 t 10 >> 3 & ^ t 4 >> 7 & >> x t 10 >> 15 & >> 1 & & t 8 >> 3 & 3 ^ 1 + << 53 t 5 >> 31 & >> 27545 t 10 >> 15 & >> 1 & & 5 << + 2 <<
+65231 13 t 10 >> 3 & ^ t 4 >> 7 & >> x t 10 >> 15 & >> 1 & & t 8 >> 3 & 3 ^ << 53 t 5 >> 31 & >> 27545 t 10 >> 15 & >> 1 & & 4 << | 3 <<
+65231 13 t 10 >> 3 & ^ t 4 >> 7 & >> x t 10 >> 15 & >> 1 & & 2 << 53 t 5 >> 31 & >> 27545 t 10 >> 15 & >> 1 & & 4 << | 3 <<
+
+Complicated? Remember all sound is produced in real time by ~100 characters and you have absolute control over it.
+
+65231 13 t 10 >> 3 & ^ t :octave 3 t 3 / 10 >> 1 & + >> 7 & >> x t 10 >> 15 & >> 1 & & 3 << 53 t 5 >> 31 & >> 27545 t 10 >> 15 & >> 1 & & 4 << :hh t 1 & t 7 >> 7 & 7 ^ << 4 >> | | :am 2 t 11 >> 1 & | <<
+
+ $(echo "65231 13 t 10 >> 3 & ^ t 3 t 3 / 10 >> 1 & + >> 7 & >> x t 10 >> 15 & >> 1 & & 3 << 53 t 5 >> 31 & >> 27545 t 10 >> 15 & >> 1 & & 4 << t 1 & t 7 >> 7 & 7 ^ << 4 >> | | 3 <<" | sed 's/t/t t 10 t 15 >> 3 \% + >> 3 \% 1 \& >>/g')
